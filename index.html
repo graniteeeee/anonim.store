@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>anonim.store — coming soon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0612;
+    --bg-2: #120a1f;
+    --surface: #170d29;
+    --line: #2a1a45;
+    --accent: #a34dfb;
+    --accent-glow: #c9a0ff;
+    --accent-deep: #5a189a;
+    --text: #ece6f7;
+    --text-dim: #9a8bb8;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(163,77,251,0.16), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 85% 80%, rgba(90,24,154,0.14), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* hex grid texture */
+  .hexfield{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    opacity:0.35;
+    background-image:
+      repeating-linear-gradient(60deg, transparent, transparent 68px, rgba(163,77,251,0.06) 69px, rgba(163,77,251,0.06) 70px),
+      repeating-linear-gradient(-60deg, transparent, transparent 68px, rgba(163,77,251,0.06) 69px, rgba(163,77,251,0.06) 70px),
+      repeating-linear-gradient(0deg, transparent, transparent 68px, rgba(163,77,251,0.05) 69px, rgba(163,77,251,0.05) 70px);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent 75%);
+  }
+
+  .scanrings{
+    position:absolute; top:-120px; right:-160px; width:640px; height:640px; z-index:0; pointer-events:none;
+  }
+  .scanrings span{
+    position:absolute; inset:0; border-radius:50%; border:1px solid rgba(163,77,251,0.25);
+    animation: ping 4.5s cubic-bezier(0.2,0.6,0.4,1) infinite;
+    opacity:0;
+  }
+  .scanrings span:nth-child(2){animation-delay:1.1s;}
+  .scanrings span:nth-child(3){animation-delay:2.2s;}
+  .scanrings span:nth-child(4){animation-delay:3.3s;}
+  @keyframes ping{
+    0%{ transform:scale(0.35); opacity:0; }
+    12%{ opacity:0.6; }
+    100%{ transform:scale(1); opacity:0; }
+  }
+
+  header{
+    position:relative; z-index:2;
+    display:flex; align-items:center; justify-content:space-between;
+    max-width:1100px; margin:0 auto; padding:32px 24px 0;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand img{ width:34px; height:34px; border-radius:8px; }
+  .brand span{ font-family:'Space Grotesk', sans-serif; font-weight:600; letter-spacing:0.02em; font-size:1rem; }
+  .chain-tag{
+    font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em;
+    color:var(--accent-glow); border:1px solid var(--line);
+    padding:6px 12px; border-radius:999px; background:rgba(163,77,251,0.06);
+  }
+
+  main{ position:relative; z-index:2; max-width:1100px; margin:0 auto; padding:0 24px; }
+
+  .hero{
+    min-height:78vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:60px 0 40px;
+  }
+  .logo-wrap{ position:relative; margin-bottom:32px; }
+  .logo-wrap img{
+    width:120px; height:120px; border-radius:26px;
+    box-shadow: 0 0 60px rgba(163,77,251,0.35), 0 0 0 1px rgba(163,77,251,0.25);
+  }
+
+  .eyebrow{
+    font-family:var(--mono); font-size:0.78rem; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--accent-glow); margin-bottom:20px;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(2.4rem, 6vw, 4.2rem); line-height:1.05; letter-spacing:-0.01em;
+    background:linear-gradient(180deg, #fdfbff 0%, var(--accent-glow) 65%, var(--accent) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    margin-bottom:20px;
+  }
+  .sub{
+    max-width:560px; color:var(--text-dim); font-size:1.05rem; line-height:1.65;
+    margin-bottom:36px;
+  }
+  .status-row{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; align-items:center; }
+  .pill{
+    display:inline-flex; align-items:center; gap:9px;
+    font-family:var(--mono); font-size:0.82rem; color:var(--text);
+    border:1px solid var(--line); background:var(--surface);
+    padding:11px 18px; border-radius:10px;
+  }
+  .pill .dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); animation:pulse 1.8s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+  .pill.muted{ color:var(--text-dim); }
+  .pill.muted .dot{ background:#4a3a6a; box-shadow:none; animation:none; }
+
+  section.about{ padding:70px 0; border-top:1px solid var(--line); }
+  .about-grid{ display:grid; grid-template-columns:1fr 1.1fr; gap:56px; align-items:start; }
+  @media(max-width:780px){ .about-grid{ grid-template-columns:1fr; gap:32px; } }
+
+  .about-grid h2{
+    font-family:'Space Grotesk', sans-serif; font-size:1.6rem; font-weight:600; line-height:1.3;
+  }
+  .about-grid h2 em{ color:var(--accent-glow); font-style:normal; }
+  .about-copy p{ color:var(--text-dim); line-height:1.75; font-size:0.98rem; }
+  .about-copy p + p{ margin-top:14px; }
+
+  .features{ padding:20px 0 70px; }
+  .features-head{ margin-bottom:32px; }
+  .features-head .eyebrow{ margin-bottom:10px; }
+  .features-head h3{ font-family:'Space Grotesk', sans-serif; font-size:1.5rem; font-weight:600; }
+
+  .grid4{ display:grid; grid-template-columns:repeat(4, 1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  @media(max-width:900px){ .grid4{ grid-template-columns:repeat(2, 1fr); } }
+  @media(max-width:520px){ .grid4{ grid-template-columns:1fr; } }
+  .feat{ background:var(--bg-2); padding:26px 22px; }
+  .feat .k{ font-family:var(--mono); font-size:0.72rem; color:var(--accent-glow); letter-spacing:0.08em; }
+  .feat h4{ font-family:'Space Grotesk', sans-serif; font-size:1.02rem; margin:10px 0 8px; font-weight:600; }
+  .feat p{ font-size:0.88rem; color:var(--text-dim); line-height:1.55; }
+
+  .apk-band{
+    border:1px solid var(--line); border-radius:18px; background:linear-gradient(135deg, rgba(163,77,251,0.10), rgba(90,24,154,0.06));
+    padding:34px 32px; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+    margin-bottom:70px;
+  }
+  .apk-band .txt h5{ font-family:'Space Grotesk', sans-serif; font-size:1.15rem; margin-bottom:6px; }
+  .apk-band .txt p{ color:var(--text-dim); font-size:0.9rem; }
+  .apk-btn{
+    font-family:var(--mono); font-size:0.85rem; color:var(--bg);
+    background:linear-gradient(180deg, var(--accent-glow), var(--accent));
+    padding:13px 22px; border-radius:10px; white-space:nowrap;
+    box-shadow:0 8px 24px rgba(163,77,251,0.25);
+  }
+
+  footer{
+    border-top:1px solid var(--line); padding:26px 24px; position:relative; z-index:2;
+    max-width:1100px; margin:0 auto;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+  }
+  footer p{ font-family:var(--mono); font-size:0.75rem; color:var(--text-dim); }
+  footer .net{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:0.75rem; color:var(--text-dim); }
+  footer .net .swatch{ width:9px; height:9px; border-radius:2px; background:linear-gradient(135deg, var(--accent-glow), var(--accent)); }
+
+  @media (prefers-reduced-motion: reduce){
+    .scanrings span, .pill .dot{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hexfield"></div>
+
+<header>
+  <div class="brand">
+    <img src="assets/logo.png" alt="anonim.store">
+    <span>anonim.store</span>
+  </div>
+  <div class="chain-tag">polygon network</div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="scanrings"><span></span><span></span><span></span><span></span></div>
+    <div class="logo-wrap">
+      <img src="assets/logo.png" alt="anonim.store logo">
+    </div>
+    <div class="eyebrow">coming soon</div>
+    <h1>Trade without<br>the technical noise.</h1>
+    <p class="sub">anonim.store is a listings board built on Polygon — a place to buy, sell, and post classifieds using web3, without needing to understand web3 to use it.</p>
+    <div class="status-row">
+      <div class="pill"><span class="dot"></span> Platform in build</div>
+      <div class="pill muted"><span class="dot"></span> Android APK — arriving soon</div>
+    </div>
+  </section>
+
+  <section class="about">
+    <div class="about-grid">
+      <h2>Everyday trading, <em>quietly</em> on-chain.</h2>
+      <div class="about-copy">
+        <p>Most web3 marketplaces are built for people who already know what a wallet, a gas fee, or a smart contract is. anonim.store isn't. It's a classifieds board for everyday buying, selling, and posting — where the Polygon network runs underneath, handling ownership and trust, while you just see a simple listing.</p>
+        <p>Every listing lives as its own NFT, which means it can carry more than a title and a photo: a location, a fixed asking price, and an encrypted file attached directly to the post — all provable, all yours, without a single technical step on your side.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="features-head">
+      <div class="eyebrow">what's inside</div>
+      <h3>Listings, with room to say more</h3>
+    </div>
+    <div class="grid4">
+      <div class="feat">
+        <div class="k">01</div>
+        <h4>No wallet jargon</h4>
+        <p>The chain handles ownership in the background. You just post, browse, and reply.</p>
+      </div>
+      <div class="feat">
+        <div class="k">02</div>
+        <h4>Location-aware</h4>
+        <p>Attach a location to any listing, so nearby buyers and sellers actually find each other.</p>
+      </div>
+      <div class="feat">
+        <div class="k">03</div>
+        <h4>Fixed, upfront price</h4>
+        <p>Set the asking price at the moment of posting — no bidding confusion, no back and forth.</p>
+      </div>
+      <div class="feat">
+        <div class="k">04</div>
+        <h4>Encrypted attachments</h4>
+        <p>Every listing can carry a private, encrypted file — visible only to who you choose.</p>
+      </div>
+    </div>
+
+    <div class="apk-band">
+      <div class="txt">
+        <h5>Android app is on the way</h5>
+        <p>The APK will be available here first, before anywhere else.</p>
+      </div>
+      <div class="apk-btn">download — coming soon</div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>&copy; 2026 anonim.store — a listings board built for everyone.</p>
+  <div class="net"><span class="swatch"></span> secured on Polygon</div>
+</footer>
+
+</body>
+</html>
