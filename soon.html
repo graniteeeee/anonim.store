@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>anonim.store — Freedom to publish.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0612; --bg-2:#120a1f; --surface:#170d29; --line:#2a1a45;
+    --accent:#a34dfb; --accent-glow:#c9a0ff; --accent-deep:#5a189a;
+    --text:#ece6f7; --text-dim:#9a8bb8; --bad:#ef5b83;
+    --mono:'JetBrains Mono', monospace; --disp:'Space Grotesk', sans-serif; --body:'IBM Plex Sans', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(163,77,251,0.15), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 90% 60%, rgba(90,24,154,0.12), transparent 60%),
+      var(--bg);
+    color:var(--text); font-family:var(--body); overflow-x:hidden; position:relative;
+  }
+  .hexfield{
+    position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.3;
+    background-image:
+      repeating-linear-gradient(60deg, transparent, transparent 68px, rgba(163,77,251,0.06) 69px, rgba(163,77,251,0.06) 70px),
+      repeating-linear-gradient(-60deg, transparent, transparent 68px, rgba(163,77,251,0.06) 69px, rgba(163,77,251,0.06) 70px),
+      repeating-linear-gradient(0deg, transparent, transparent 68px, rgba(163,77,251,0.05) 69px, rgba(163,77,251,0.05) 70px);
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, black, transparent 80%);
+  }
+  a{color:inherit;}
+  .wrap{max-width:1100px; margin:0 auto; padding:0 24px; position:relative; z-index:2;}
+  .eyebrow{font-family:var(--mono); font-size:0.75rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--accent-glow);}
+
+  header.top{
+    display:flex; align-items:center; justify-content:space-between;
+    max-width:1100px; margin:0 auto; padding:28px 24px 0; position:relative; z-index:3;
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand img{width:32px; height:32px; border-radius:8px;}
+  .brand span{font-family:var(--disp); font-weight:600; font-size:0.98rem;}
+  nav.top-nav{display:flex; gap:22px; font-family:var(--mono); font-size:0.78rem; color:var(--text-dim);}
+  nav.top-nav a:hover{color:var(--accent-glow);}
+  .chain-tag{font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; color:var(--accent-glow); border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(163,77,251,0.06); white-space:nowrap;}
+  @media(max-width:760px){ nav.top-nav{display:none;} }
+
+  .panel{ min-height:88vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; position:relative; z-index:2; padding:60px 24px; opacity:0; transform:translateY(18px); transition:opacity 0.7s ease, transform 0.7s ease; }
+  .panel.in{ opacity:1; transform:translateY(0); }
+
+  .stage{position:relative; display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .counter-num{ font-family:var(--disp); font-weight:700; font-size:clamp(2.6rem,7vw,4.2rem); color:var(--text); opacity:0; transform:scale(0.85); transition:opacity 0.5s ease, transform 0.5s ease; }
+  .panel.in .counter-num{ opacity:1; transform:scale(1); }
+  .counter-num.big{ font-size:clamp(3.2rem,9vw,6rem); background:linear-gradient(180deg,#fdfbff, var(--accent-glow) 60%, var(--accent)); -webkit-background-clip:text; background-clip:text; color:transparent; transition-delay:0.35s; }
+  .hero-panel{ position:relative; overflow:hidden; }
+  .scanrings{ position:absolute; top:50%; left:50%; width:640px; height:640px; transform:translate(-50%,-50%); pointer-events:none; z-index:0; }
+  .scanrings span{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(163,77,251,0.22); opacity:0; }
+  .panel.in .scanrings span{ animation:ping 4.2s cubic-bezier(.2,.6,.4,1) infinite; }
+  .panel.in .scanrings span:nth-child(2){ animation-delay:1.2s; }
+  .panel.in .scanrings span:nth-child(3){ animation-delay:2.4s; }
+  @keyframes ping{ 0%{transform:scale(0.3); opacity:0;} 12%{opacity:0.6;} 100%{transform:scale(1); opacity:0;} }
+
+  .pulse-track{ position:relative; width:2px; height:44px; background:var(--line); overflow:hidden; opacity:0; transition:opacity 0.3s ease; }
+  .panel.in .pulse-track{ opacity:1; }
+  .pulse-track::after{ content:''; position:absolute; top:-14px; left:-3px; width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent); opacity:0; }
+  .panel.in .pulse-track::after{ animation:drop 1s ease 0.25s 1 forwards; }
+
+  .freedom-line{ font-family:var(--disp); font-weight:700; font-size:clamp(2rem,5.5vw,3.4rem); margin-top:34px; display:flex; flex-direction:column; gap:6px; }
+  .freedom-line span, .freedom-line em{ font-style:normal; opacity:0; transform:translateY(10px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .panel.in .freedom-line span{ opacity:1; transform:translateY(0); transition-delay:0.65s; }
+  .panel.in .freedom-line em{ opacity:1; transform:translateY(0); transition-delay:0.95s; }
+  .freedom-line em{ color:var(--accent-glow); }
+  .panel.in .freedom-line em{ animation:glowpulse 3s ease-in-out 1.8s infinite; }
+  @keyframes glowpulse{ 0%,100%{ text-shadow:0 0 0 rgba(201,160,255,0); } 50%{ text-shadow:0 0 22px rgba(201,160,255,0.55); } }
+
+  .text-panel{ max-width:520px; margin:0 auto; }
+  .fact-list{ list-style:none; display:flex; flex-direction:column; gap:12px; margin-top:18px; }
+  .fact-list li{ font-family:var(--disp); font-size:1.3rem; font-weight:500; color:var(--text); }
+  .fact-lead{ font-family:var(--disp); font-size:1.5rem; font-weight:600; margin-top:16px; }
+  .fact-note{ color:var(--text-dim); margin-top:10px; font-size:0.95rem; }
+  .two-part{ display:flex; gap:14px; justify-content:center; margin-top:18px; }
+  .two-part span{ font-family:var(--mono); font-size:0.85rem; padding:9px 18px; border-radius:8px; border:1px solid var(--line); background:var(--surface); }
+  .two-part span:last-child{ border-color:var(--accent); color:var(--accent-glow); }
+
+  .nft-card{ width:150px; height:190px; border-radius:16px; border:1px solid var(--line); background:linear-gradient(160deg, var(--surface), var(--bg-2)); display:flex; align-items:center; justify-content:center; font-family:var(--mono); color:var(--text-dim); font-size:1.6rem; letter-spacing:0.3em; transform:scale(1); }
+  .panel.in .nft-card{ animation:tap 1.4s ease 0.3s 1; }
+  @keyframes tap{ 0%{transform:scale(1);} 18%{transform:scale(0.92);} 40%{transform:scale(1.03); box-shadow:0 0 40px rgba(163,77,251,0.35);} 100%{transform:scale(1); box-shadow:0 0 40px rgba(163,77,251,0.35);} }
+  .unlock-tag{ font-family:var(--disp); font-weight:600; font-size:1.15rem; margin-top:26px; opacity:0; transition:opacity 0.5s ease; transition-delay:1.1s; }
+  .panel.in .unlock-tag{ opacity:1; }
+
+  .wallet-box{ display:flex; flex-direction:column; align-items:center; gap:16px; padding:30px 40px; border:1px solid var(--line); border-radius:18px; background:var(--surface); min-width:220px; }
+  .pin-dots{ display:flex; gap:10px; }
+  .pin-dots span{ width:12px; height:12px; border-radius:50%; border:1px solid var(--accent); opacity:0.25; transition:opacity 0.3s ease, background 0.3s ease; }
+  .panel.in .pin-dots span{ background:var(--accent); opacity:1; }
+  .panel.in .pin-dots span:nth-child(1){transition-delay:0.2s;}
+  .panel.in .pin-dots span:nth-child(2){transition-delay:0.4s;}
+  .panel.in .pin-dots span:nth-child(3){transition-delay:0.6s;}
+  .panel.in .pin-dots span:nth-child(4){transition-delay:0.8s;}
+  .mnemonic{ font-family:var(--mono); font-size:0.85rem; color:var(--text-dim); opacity:0; transition:opacity 0.4s ease; transition-delay:1.05s; }
+  .panel.in .mnemonic{opacity:1;}
+  .ready{ font-family:var(--disp); font-weight:600; color:var(--accent-glow); opacity:0; transform:scale(0.8); transition:opacity 0.4s ease, transform 0.4s ease; transition-delay:1.4s; }
+  .panel.in .ready{opacity:1; transform:scale(1);}
+
+  .flow-node{ font-family:var(--mono); font-size:0.85rem; padding:14px 26px; border-radius:10px; border:1px solid var(--line); background:var(--surface); opacity:0; transition:opacity 0.4s ease; }
+  .panel.in .flow-node{opacity:1;}
+  .flow-node.wallet{ transition-delay:0.9s; border-color:var(--accent); color:var(--accent-glow); }
+  .flow-arrow{ position:relative; height:46px; width:2px; background:var(--line); margin:2px 0; overflow:hidden; }
+  .flow-arrow::after{ content:''; position:absolute; top:-20px; left:-3px; width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); opacity:0; }
+  .panel.in .flow-arrow::after{ animation:drop 1s ease 0.35s 1 forwards; }
+  @keyframes drop{ 0%{ top:-10px; opacity:1;} 90%{opacity:1;} 100%{ top:44px; opacity:0;} }
+
+  main{ position:relative; z-index:2; }
+  main section{ padding:90px 0; border-top:1px solid var(--line); max-width:1100px; margin:0 auto; }
+  section .head{ margin-bottom:40px; }
+  section h2{ font-family:var(--disp); font-weight:600; font-size:clamp(1.6rem,3.4vw,2.3rem); margin-top:10px; }
+  section h2 em{ font-style:normal; color:var(--accent-glow); }
+
+  .story-grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:20px; }
+  @media(max-width:760px){ .story-grid{grid-template-columns:1fr;} }
+  .story-card{ background:var(--bg-2); border:1px solid var(--line); border-radius:16px; padding:28px; }
+  .story-tag{ font-family:var(--mono); font-size:0.78rem; color:var(--accent-glow); margin-bottom:14px; }
+  .story-card p{ color:var(--text-dim); line-height:1.7; font-size:0.95rem; }
+  .story-card p + p{ margin-top:10px; }
+
+  .step-row{ display:grid; grid-template-columns:64px 1fr; gap:20px; padding:26px 0; border-top:1px solid var(--line); }
+  .step-row:first-of-type{ border-top:none; }
+  .step-num{ font-family:var(--mono); color:var(--accent-glow); font-size:1.6rem; font-weight:500; }
+  .step-body h3{ font-family:var(--disp); font-size:1.15rem; margin-bottom:8px; font-weight:600; }
+  .step-body p{ color:var(--text-dim); line-height:1.7; font-size:0.95rem; }
+  .fee-note{ margin-top:20px; font-family:var(--mono); font-size:0.82rem; color:var(--text-dim); border-left:2px solid var(--accent); padding-left:14px; }
+
+  .unlock-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden; margin-top:24px; }
+  @media(max-width:900px){ .unlock-grid{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:520px){ .unlock-grid{grid-template-columns:1fr;} }
+  .u-card{ background:var(--bg-2); padding:24px 20px; }
+  .u-card h4{ font-family:var(--disp); font-size:1rem; margin-bottom:8px; font-weight:600; }
+  .u-card p{ color:var(--text-dim); font-size:0.86rem; line-height:1.55; }
+
+  .privacy p{ max-width:680px; color:var(--text-dim); line-height:1.8; font-size:0.98rem; }
+  .privacy p + p{ margin-top:14px; }
+  .open-with{ display:flex; gap:14px; margin-top:24px; flex-wrap:wrap; }
+  .open-with span{ font-family:var(--mono); font-size:0.82rem; border:1px solid var(--line); background:var(--surface); padding:10px 16px; border-radius:9px; color:var(--text-dim); }
+
+  .freedom p{ max-width:700px; color:var(--text-dim); line-height:1.8; font-size:0.98rem; }
+  .freedom p + p{ margin-top:14px; }
+  .freedom .kicker{ font-family:var(--disp); font-style:italic; color:var(--accent-glow); margin-bottom:18px; font-size:1.05rem; }
+
+  .compare-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:24px; }
+  @media(max-width:900px){ .compare-grid{grid-template-columns:1fr;} }
+  .cmp-card{ border:1px solid var(--line); border-radius:16px; padding:26px; background:var(--bg-2); }
+  .cmp-card.hi{ background:linear-gradient(160deg, rgba(163,77,251,0.12), rgba(90,24,154,0.06)); border-color:var(--accent); }
+  .cmp-card h4{ font-family:var(--disp); font-weight:600; margin-bottom:16px; font-size:1.05rem; }
+  .cmp-card ul{ list-style:none; display:flex; flex-direction:column; gap:11px; }
+  .cmp-card li{ font-size:0.9rem; color:var(--text-dim); padding-left:22px; position:relative; }
+  .cmp-card li::before{ content:'✕'; position:absolute; left:0; color:var(--bad); font-size:0.8rem; top:2px; }
+  .cmp-card.hi li{ color:var(--text); }
+  .cmp-card.hi li::before{ content:'✦'; color:var(--accent-glow); }
+
+  .grid4{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden; margin-top:24px; }
+  @media(max-width:900px){ .grid4{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:520px){ .grid4{grid-template-columns:1fr;} }
+  .feat{ background:var(--bg-2); padding:26px 22px; }
+  .feat h4{ font-family:var(--disp); font-size:1rem; margin-bottom:8px; font-weight:600; }
+  .feat p{ font-size:0.86rem; color:var(--text-dim); line-height:1.55; }
+
+  details{ border-top:1px solid var(--line); padding:20px 0; }
+  details:last-of-type{ border-bottom:1px solid var(--line); }
+  summary{ font-family:var(--disp); font-size:1.02rem; font-weight:500; cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:16px; }
+  summary::-webkit-details-marker{ display:none; }
+  summary::after{ content:'+'; font-family:var(--mono); color:var(--accent-glow); font-size:1.2rem; transition:transform 0.25s ease; flex-shrink:0; }
+  details[open] summary::after{ transform:rotate(45deg); }
+  details p{ color:var(--text-dim); margin-top:12px; line-height:1.7; font-size:0.92rem; max-width:680px; }
+
+  .install{ text-align:center; }
+  .install p.lead{ max-width:560px; margin:16px auto 30px; color:var(--text-dim); font-size:1rem; line-height:1.7; }
+  .apk-btn{ display:inline-flex; align-items:center; gap:10px; font-family:var(--mono); font-size:0.95rem; color:var(--bg); background:linear-gradient(180deg, var(--accent-glow), var(--accent)); padding:16px 30px; border-radius:12px; box-shadow:0 10px 30px rgba(163,77,251,0.28); border:none; cursor:pointer; }
+  .install .fine{ margin-top:18px; font-size:0.8rem; color:var(--text-dim); max-width:520px; margin-left:auto; margin-right:auto; }
+
+  footer{ border-top:1px solid var(--line); padding:28px 24px; position:relative; z-index:2; }
+  footer .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  footer p{ font-family:var(--mono); font-size:0.75rem; color:var(--text-dim); }
+  .net{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:0.75rem; color:var(--text-dim); }
+  .net .swatch{ width:9px; height:9px; border-radius:2px; background:linear-gradient(135deg, var(--accent-glow), var(--accent)); }
+
+  @media(prefers-reduced-motion:reduce){
+    .panel, .counter-num, .pulse-track, .pulse-track::after, .scanrings span, .freedom-line span, .freedom-line em, .nft-card, .unlock-tag, .pin-dots span, .mnemonic, .ready, .flow-node, .flow-arrow::after{ animation:none !important; transition:none !important; opacity:1 !important; transform:none !important; text-shadow:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="hexfield"></div>
+
+<header class="top">
+  <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Pagrindinis tamsus fono gradientas -->
+    <radialGradient id="bg-glow" cx="50%" cy="50%" r="75%">
+      <stop offset="0%" stop-color="#180736" />
+      <stop offset="100%" stop-color="#05010d" />
+    </radialGradient>
+
+    <!-- „Q“ raidės šviesus gradientas -->
+    <linearGradient id="q-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5D4FF" />
+      <stop offset="100%" stop-color="#A876F5" />
+    </linearGradient>
+
+    <!-- Spynos gradientas -->
+    <linearGradient id="lock-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#A566FF" />
+      <stop offset="100%" stop-color="#541CA8" />
+    </linearGradient>
+
+    <!-- Viršutinio simbolio (šešiakampių) gradientas -->
+    <linearGradient id="poly-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D6B4FF" />
+      <stop offset="100%" stop-color="#7B3FE4" />
+    </linearGradient>
+
+    <!-- Neoninio rėmelio ir elementų švytėjimo efektas (Glow) -->
+    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- 1. Fonas su užapvalintais kampais -->
+  <rect x="25" y="25" width="450" height="450" rx="90" fill="url(#bg-glow)" stroke="#6C35D4" stroke-width="4" filter="url(#neon-glow)" />
+  <rect x="25" y="25" width="450" height="450" rx="90" fill="none" stroke="#A67CFF" stroke-width="1.5" opacity="0.6" />
+
+  <!-- Foninis korio raštas (Hexagon Grid) – subtilus detalumas kairėje ir dešinėje -->
+  <g opacity="0.08" stroke="#A67CFF" stroke-width="1" fill="none">
+    <!-- Kairė pusė -->
+    <polygon points="50,150 70,138 90,150 90,172 70,184 50,172" />
+    <polygon points="90,172 110,160 130,172 130,194 110,206 90,194" />
+    <polygon points="50,194 70,182 90,194 90,216 70,228 50,216" />
+    <polygon points="50,238 70,226 90,238 90,260 70,272 50,260" />
+    <polygon points="90,260 110,248 130,260 130,282 110,294 90,282" />
+    <polygon points="50,282 70,270 90,282 90,304 70,316 50,304" />
+    <!-- Dešinė pusė -->
+    <polygon points="410,280 430,268 450,280 450,302 430,314 410,302" />
+    <polygon points="370,302 390,290 410,302 410,324 390,336 370,324" />
+    <polygon points="410,324 430,312 450,324 450,346 430,358 410,346" />
+    <polygon points="370,346 390,334 410,346 410,368 390,380 370,368" />
+  </g>
+
+  <!-- 2. Pagrindinė „Q“ forma -->
+  <g filter="url(#neon-glow)">
+    <path d="M 250,135 
+             C 148,135 65,218 65,320 
+             C 65,422 148,505 250,505 
+             C 310,505 363,476 397,431 
+             L 348,395 
+             C 324,420 289,435 250,435 
+             C 187,435 135,383 135,320 
+             C 135,257 187,205 250,205 
+             C 305,205 351,244 362,296 
+             L 421,268 
+             C 402,192 332,135 250,135 Z" 
+          fill="url(#q-gradient)" />
+          
+    <!-- „Q“ raidės dešinioji uodegėlė (įstrižas nukirtimas) -->
+    <path d="M 335,400 L 420,485 L 420,410 L 375,365 Z" fill="url(#q-gradient)" />
+  </g>
+
+  <!-- 3. Saugumo spyna „Q“ raidės viduryje -->
+  <g filter="url(#neon-glow)">
+    <!-- Spynos lankelis -->
+    <path d="M 210,240 
+             C 210,210 220,195 250,195 
+             C 280,195 290,210 290,240 
+             L 290,260 L 210,260 Z" 
+          fill="none" stroke="url(#q-gradient)" stroke-width="16" stroke-linecap="round" />
+    
+    <!-- Spynos korpusas -->
+    <path d="M 195,255 
+             L 305,255 
+             C 312,255 315,260 317,268 
+             L 327,342 
+             C 329,352 322,360 312,360 
+             L 188,360 
+             C 178,360 171,352 173,342 
+             L 183,268 
+             C 185,260 188,255 195,255 Z" 
+          fill="url(#lock-gradient)" stroke="#D6B4FF" stroke-width="3" />
+          
+    <!-- Rakto skylutė -->
+    <path d="M 250,285 
+             A 11,11 0 0,0 241,302 
+             L 241,328 
+             A 9,9 0 0,0 259,328 
+             L 259,302 
+             A 11,11 0 0,0 250,285 Z" 
+          fill="#100324" />
+  </g>
+
+  <!-- 4. Viršutinis dvigubas šešiakampis (Polygon / Blockchain motyvas) -->
+  <g filter="url(#neon-glow)">
+    <!-- Viršutinis kairysis šešiakampis -->
+    <path d="M 350,90 L 390,67 L 430,90 L 430,136 L 390,159 L 350,136 Z" 
+          fill="none" stroke="url(#poly-gradient)" stroke-width="18" stroke-linejoin="round" />
+          
+    <!-- Apatinis dešinysis šešiakampis (persidengiantis) -->
+    <path d="M 410,145 L 450,122 L 490,145 L 490,191 L 450,214 L 410,191 Z" 
+          fill="none" stroke="url(#poly-gradient)" stroke-width="18" stroke-linejoin="round" />
+          
+    <!-- Jungiamasis šešiakampių efektas (kontūro iškirpimas vizualiam gyliui) -->
+    <path d="M 410,145 L 430,136" stroke="#180736" stroke-width="22" stroke-linecap="round" />
+    <path d="M 410,145 L 430,136" stroke="url(#poly-gradient)" stroke-width="18" stroke-linecap="round" />
+  </g>
+</svg></div>
+  <nav class="top-nav">
+    <a href="#how">How it works</a>
+    <a href="#compare">Why not Facebook</a>
+    <a href="#tech">Technology</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <div class="chain-tag">Android · Polygon · Global</div>
+</header>
+
+<div id="rhythm">
+
+  <section class="panel hero-panel" data-kind="anim">
+    <div class="scanrings"><span></span><span></span><span></span></div>
+    <div class="stage">
+      <div class="counter-num">€4</div>
+      <div class="pulse-track"></div>
+      <div class="counter-num big"><span class="count-up" data-target="2500">0</span></div>
+    </div>
+    <h1 class="freedom-line">
+      <span class="line1">It&rsquo;s here.</span>
+      <em class="line2">Freedom to publish.</em>
+    </h1>
+  </section>
+
+  <section class="panel text-panel" data-kind="text">
+    <div class="eyebrow">how</div>
+    <ul class="fact-list">
+      <li>€4 is enough to start.</li>
+      <li>Up to 2,500 listings.</li>
+      <li>No registration.</li>
+      <li>Instant payment.</li>
+    </ul>
+  </section>
+
+  <section class="panel" data-kind="anim">
+    <div class="stage">
+      <div class="nft-card">···</div>
+      <div class="unlock-tag">🔓 Secret unlocks</div>
+    </div>
+  </section>
+
+  <section class="panel text-panel" data-kind="text">
+    <div class="eyebrow">what</div>
+    <p class="fact-lead">Every listing has two parts.</p>
+    <div class="two-part"><span>Public</span><span>Secret</span></div>
+    <p class="fact-note">Only the buyer receives the secret part.</p>
+  </section>
+
+  <section class="panel" data-kind="anim">
+    <div class="stage">
+      <div class="wallet-box">
+        <div class="pin-dots"><span></span><span></span><span></span><span></span></div>
+        <div class="mnemonic">12-word key</div>
+        <div class="ready">✓ Ready</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel text-panel" data-kind="text">
+    <div class="eyebrow">why</div>
+    <p class="fact-lead">The wallet stores your assets.</p>
+    <p class="fact-note">Nobody can recover it if you lose the phrase.</p>
+  </section>
+
+  <section class="panel" data-kind="anim">
+    <div class="stage">
+      <div class="flow-node">Buyer</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node wallet">Wallet</div>
+    </div>
+  </section>
+
+  <section class="panel text-panel" data-kind="text">
+    <div class="eyebrow">where</div>
+    <p class="fact-lead">Payment goes directly to your wallet.</p>
+    <p class="fact-note">The platform never holds your funds.</p>
+  </section>
+
+</div>
+
+<main>
+  <div class="wrap" style="padding:0;">
+
+  <section id="stories">
+    <div class="head">
+      <div class="eyebrow">two stories</div>
+      <h2>Same platform. <em>Two different choices.</em></h2>
+    </div>
+    <div class="story-grid">
+      <div class="story-card">
+        <div class="story-tag">Aja · Vilnius</div>
+        <p>Created a listing — a photo, a discount on a haircut. In the secret part: a coupon code and address. Added "beauty", "Vilnius".</p>
+        <p>Someone found it through the filter, paid, got the code. Aja got the money. The client came in.</p>
+      </div>
+      <div class="story-card">
+        <div class="story-tag">Gugi · Kaunas</div>
+        <p>Recorded a video — how to change engine oil. In the secret part: full instructions with part numbers. No city. No name.</p>
+        <p>Someone found it through the category filter, paid, got the instructions. Gugi stayed invisible.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="head">
+      <div class="eyebrow">how it works</div>
+      <h2>Three steps. <em>That's it.</em></h2>
+    </div>
+    <div class="step-row">
+      <div class="step-num">I</div>
+      <div class="step-body">
+        <h3>Create a wallet</h3>
+        <p>Download the APK from anonim.store. Press the button, set a PIN — wallet open. No email, no phone number, no personal data. The wallet is restored with a 12-word key — write it down and keep it somewhere only you know. The same key works in MetaMask, Trust Wallet and other standard wallets.</p>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">II</div>
+      <div class="step-body">
+        <h3>Get POL</h3>
+        <p>POL is the Polygon network currency. Buy it at global.transak.com — accepts regular bank cards. Transak will ask you to verify your identity — standard financial services procedure, takes about 5 minutes. We recommend starting with €4. That's enough for up to 2,500 listings depending on the price you set.</p>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">III</div>
+      <div class="step-body">
+        <h3>Create a listing and find a buyer</h3>
+        <p>Upload a photo, video or audio. Describe it, set a price. In the secret part — what the buyer receives after the transaction. The listing goes live instantly and exists as long as the blockchain does. Buyers find it through filters — city, topic, price. They pay in POL, the content transfers to their wallet immediately.</p>
+      </div>
+    </div>
+    <p class="fee-note">5% tool fee on the listed price — once, at the moment of creation. Minimum listing price — 0.001 POL.</p>
+  </section>
+
+  <section id="unlock">
+    <div class="head">
+      <div class="eyebrow">unlock content</div>
+      <h2>Public and secret.</h2>
+    </div>
+    <p style="color:var(--text-dim); max-width:640px; line-height:1.7;">Every listing has two parts. Public — visible to everyone through the filter. Secret — only the buyer gets it after the transaction.</p>
+    <div class="unlock-grid">
+      <div class="u-card"><h4>Coupons &amp; discounts</h4><p>A code the customer presents when they arrive. A digital gift card — no paper receipts.</p></div>
+      <div class="u-card"><h4>Contacts &amp; appointments</h4><p>Address or phone number — only for those who already paid.</p></div>
+      <div class="u-card"><h4>Digital content</h4><p>Images, audio, video, 3D models. Preview is public. The original goes to the buyer.</p></div>
+      <div class="u-card"><h4>Anything else</h4><p>A poem, a joke, a lesson, a recipe, instructions, a love letter. If you can describe it — you can sell it.</p></div>
+    </div>
+  </section>
+
+  <section id="privacy" class="privacy">
+    <div class="head">
+      <div class="eyebrow">privacy</div>
+      <h2>The platform doesn't know who you are.</h2>
+    </div>
+    <p>A wallet opens with no personal data. The blockchain records wallet addresses — not names, not phone numbers, not locations. What information ends up in a listing is each person's own business.</p>
+    <p>Aja added a city and category — to be found. Gugi didn't. The system works the same for both.</p>
+    <p>The first creator's wallet address stays on the blockchain. Every subsequent buyer's address is visible on the blockchain too — but the platform doesn't link it to a person. How anonymous you remain depends on what you put in the listing and how you acquired POL.</p>
+    <div class="open-with"><span>→ PIN code</span><span>→ 12-word key</span><span>→ Nothing else</span></div>
+  </section>
+
+  <section id="freedom" class="freedom">
+    <div class="head">
+      <div class="eyebrow">freedom and responsibility</div>
+      <p class="kicker">This is not a warning. This is part of the system.</p>
+    </div>
+    <p>The blockchain gives a freedom that didn't exist before — to publish, trade, receive payments without a middleman who can shut you down, block you or ask who you are. This freedom is real. And it works the same in Vilnius, Bradford, or Zimbabwe.</p>
+    <p>But the blockchain is a public ledger. Transactions are visible — just an address, not a person. Anonymity means the platform doesn't link your address to your identity — not that transactions are invisible. It's a tool, not a shield.</p>
+    <p>The creator is responsible for published content under the laws of their country. The platform doesn't control this — and can't. That's also part of the freedom.</p>
+  </section>
+
+  <section id="compare">
+    <div class="head">
+      <div class="eyebrow">comparison</div>
+      <h2>Why not <em>Facebook.</em></h2>
+    </div>
+    <div class="compare-grid">
+      <div class="cmp-card">
+        <h4>Facebook · Instagram</h4>
+        <ul>
+          <li>The algorithm decides who sees your listing</li>
+          <li>You pay to reach your own followers</li>
+          <li>No access control over your content</li>
+          <li>Account blocked without warning</li>
+        </ul>
+      </div>
+      <div class="cmp-card">
+        <h4>Vinted · Etsy</h4>
+        <ul>
+          <li>Commission on every sale</li>
+          <li>Physical goods only</li>
+          <li>Buyer data stays on the platform</li>
+          <li>Waiting periods and dispute procedures</li>
+        </ul>
+      </div>
+      <div class="cmp-card hi">
+        <h4>anonim.store</h4>
+        <ul>
+          <li>Filter — buyers find you themselves</li>
+          <li>Services, coupons, files, video, audio, 3D</li>
+          <li>Payment to your wallet instantly</li>
+          <li>Listing is permanent — or burn it yourself (~0.001 POL)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="tech">
+    <div class="head">
+      <div class="eyebrow">technology</div>
+      <h2>How it works <em>under the hood.</em></h2>
+    </div>
+    <div class="grid4">
+      <div class="feat"><h4>Polygon Mainnet</h4><p>Fast and cheap network. Transaction cost — around 0.0015 of a cent.</p></div>
+      <div class="feat"><h4>PIN protection</h4><p>PIN stored only on your device. The platform has no access to your wallet or funds.</p></div>
+      <div class="feat"><h4>12-word key</h4><p>Standard mnemonic — works in anonim.store, MetaMask, Trust Wallet and other wallets. If you lose the key, access cannot be recovered.</p></div>
+      <div class="feat"><h4>No data</h4><p>No name, email or phone number. Your wallet address is the only trace on the platform.</p></div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="head">
+      <div class="eyebrow">faq</div>
+      <h2>Questions, answered.</h2>
+    </div>
+    <details open>
+      <summary>What is POL and how do I get it?</summary>
+      <p>POL is the Polygon network currency. Buy it at global.transak.com — accepts regular bank cards. Transak will ask you to verify your identity — standard procedure, takes about 5 minutes. We recommend starting with €4. That's enough for up to 2,500 listings.</p>
+    </details>
+    <details>
+      <summary>Do I really not need to register?</summary>
+      <p>Correct. PIN code and 12-word key — that's it. No email, no phone. The same key restores your wallet on any device — in anonim.store, MetaMask or Trust Wallet.</p>
+    </details>
+    <details>
+      <summary>How much does it cost to create a listing?</summary>
+      <p>Two separate costs: the Polygon network transaction (~0.0015 of a cent) and the platform tool fee — 5% of your listed price, once at the moment of creation. Minimum listing price — 0.001 POL. No fee on resales.</p>
+    </details>
+    <details>
+      <summary>How long does a listing last?</summary>
+      <p>Forever. Only the owner can destroy it using the burn function — transaction cost around 0.001 POL.</p>
+    </details>
+    <details>
+      <summary>Can I resell a listing I bought?</summary>
+      <p>Yes. A listing is a digital asset. The person who bought your coupon or instructions can later resell that access to someone else — like passing on a gift card.</p>
+    </details>
+    <details>
+      <summary>How does a buyer find my listing?</summary>
+      <p>Through filters — city, topic, maximum price. Filters are the main discovery mechanism.</p>
+    </details>
+    <details>
+      <summary>How do I install the APK?</summary>
+      <p>Download from anonim.store. Android will ask you to allow installation from unknown sources — go to Settings → Apps → Allow from this source. This is normal — we are not on Google Play.</p>
+    </details>
+    <details>
+      <summary>What file types can I upload?</summary>
+      <p>Images (PNG, JPG, GIF), audio (MP3, FLAC, WAV), video (MP4, WEBM), 3D models (GLTF, GLB). A secret unlock part can be added to any format.</p>
+    </details>
+    <details>
+      <summary>What if I lose my phone?</summary>
+      <p>Install the app on any Android device and enter your 12-word key. If you lose the key — access cannot be recovered.</p>
+    </details>
+  </section>
+
+  <section id="install" class="install">
+    <div class="eyebrow">install</div>
+    <h2>Start today. <em>Free.</em></h2>
+    <p class="lead">Download the APK, create a wallet, get POL at global.transak.com from €4 — first listing live in 15 minutes.</p>
+    <button class="apk-btn">⬇ Download APK · Android</button>
+    <p class="fine">Android may ask you to allow installation from unknown sources — go to Settings → Apps → Allow from this source. This is normal — we are not on Google Play.</p>
+  </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>&copy; 2026 anonim.store — a listings board built for everyone.</p>
+    <div class="net"><span class="swatch"></span> secured on Polygon</div>
+  </div>
+</footer>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function runCountUp(el){
+    if(el.dataset.done) return;
+    el.dataset.done = '1';
+    const target = parseInt(el.dataset.target, 10);
+    if(reduceMotion){ el.textContent = target.toLocaleString('en-US'); return; }
+    const duration = 1300;
+    const start = performance.now();
+    function step(now){
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * target).toLocaleString('en-US');
+      if(p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        const counter = e.target.querySelector('.count-up');
+        if(counter) setTimeout(()=>runCountUp(counter), 350);
+      }
+    });
+  }, { threshold:0.35 });
+  document.querySelectorAll('.panel').forEach(p=>io.observe(p));
+</script>
+</body>
+</html>
