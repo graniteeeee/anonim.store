@@ -45,6 +45,53 @@
   nav.top-nav a:hover{color:var(--accent-glow);}
   .chain-tag{font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; color:var(--accent-glow); border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(163,77,251,0.06); white-space:nowrap;}
   @media(max-width:760px){ nav.top-nav{display:none;} }
+  /* Nuorodos išvalymas */
+.chain-tag-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Pagrindinė žymos animacija (pulsavimas didėjant/mažėjant) */
+.pulse-tag {
+  cursor: pointer;
+  animation: tagPulse 2.5s infinite ease-in-out;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Atskiras akcentas Android užrašui */
+.apk-highlight {
+  font-weight: 700;
+  display: inline-block;
+  animation: textGlow 2.5s infinite ease-in-out;
+}
+
+/* Užvedus pele — šiek tiek padidėja ir pristabdo pulsavimą */
+.chain-tag-link:hover .pulse-tag {
+  transform: scale(1.05) !important;
+  opacity: 0.95;
+}
+
+/* Animacijų kadrai (Keyframes) */
+@keyframes tagPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04); /* Švelnus padidėjimas */
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1; /* Tekstas pasidaro ryškesnis viršūnėje */
+  }
+}
 
   .panel{ min-height:88vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; position:relative; z-index:2; padding:60px 24px; opacity:0; transform:translateY(18px); transition:opacity 0.7s ease, transform 0.7s ease; }
   .panel.in{ opacity:1; transform:translateY(0); }
@@ -52,7 +99,41 @@
   .stage{position:relative; display:flex; flex-direction:column; align-items:center; gap:10px;}
   .counter-num{ font-family:var(--disp); font-weight:700; font-size:clamp(2.6rem,7vw,4.2rem); color:var(--text); opacity:0; transform:scale(0.85); transition:opacity 0.5s ease, transform 0.5s ease; }
   .panel.in .counter-num{ opacity:1; transform:scale(1); }
-  .counter-num.big{ font-size:clamp(3.2rem,9vw,6rem); background:linear-gradient(180deg,#fdfbff, var(--accent-glow) 60%, var(--accent)); -webkit-background-clip:text; background-clip:text; color:transparent; transition-delay:0.35s; }
+  .counter-num.big {
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.counter-num .cents {
+  font-size: 0.75em;
+  opacity: 0.9;
+}
+
+.sub-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.sub-info .highlight {
+  opacity: 0.7;
+}
+
+.sub-info .divider {
+  opacity: 0.3;
+}
+
+.infinity-badge {
+  color: #00ff66; /* Neon green / accent glow */
+  font-weight: 700;
+  text-shadow: 0 0 12px rgba(0, 255, 102, 0.35);
+} 
   .hero-panel{ position:relative; overflow:hidden; }
   .scanrings{ position:absolute; top:50%; left:50%; width:640px; height:640px; transform:translate(-50%,-50%); pointer-events:none; z-index:0; }
   .scanrings span{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(163,77,251,0.22); opacity:0; }
@@ -316,37 +397,46 @@
     <a href="#tech">Technology</a>
     <a href="#faq">FAQ</a>
   </nav>
-  <a href="https://github.com/graniteeeee/anonim.store/releases/download/v1.0.0/app-release.apk" download style="text-decoration: none;">
-  <div class="chain-tag" style="cursor: pointer;">
-    📥 Get Android APK · Polygon · Global
+ <a href="https://github.com/graniteeeee/anonim.store/releases/download/v1.0.0/app-release.apk" download class="chain-tag-link">
+  <div class="chain-tag pulse-tag">
+    <span class="apk-highlight">Get Android APK</span> · Polygon · Global
   </div>
-</a>
+</a> 
 </header>
 
 <div id="rhythm">
 
   <section class="panel hero-panel" data-kind="anim">
-    <div class="scanrings"><span></span><span></span><span></span></div>
-    <div class="stage">
-      <div class="counter-num">€4</div>
-      <div class="pulse-track"></div>
-      <div class="counter-num big"><span class="count-up" data-target="2500">0</span></div>
-    </div>
+   <div class="scanrings"><span></span><span></span><span></span></div>
+<div class="stage">
+  <!-- Pagrindinis kainos akcentas -->
+  <div class="counter-num big">
+    €0.<span class="cents">01</span>
+  </div>
+  
+  <div class="pulse-track"></div>
+  
+  <!-- Terminas ir paaiškinimas -->
+  <div class="counter-num sub-info">
+    <span class="highlight">1 LISTING</span>
+    <span class="divider">•</span>
+    <span class="infinity-badge">∞ FOREVER</span>
+  </div>
+</div> 
     <h1 class="freedom-line">
       <span class="line1">It&rsquo;s here.</span>
       <em class="line2">Freedom to publish.</em>
     </h1>
   </section>
 
-  <section class="panel text-panel" data-kind="text">
-    <div class="eyebrow">how</div>
-    <ul class="fact-list">
-      <li>€4 is enough to start.</li>
-      <li>Up to 2,500 listings.</li>
-      <li>No registration.</li>
-      <li>Instant payment.</li>
-    </ul>
-  </section>
+ <section class="panel text-panel" data-kind="text">
+  <div class="eyebrow">how</div>
+  <ul class="fact-list">
+    <li>A wallet opens with no personal data.</li>
+    <li>The blockchain records wallet addresses — not names, not phone numbers, not locations.</li>
+    <li>What information ends up in a listing is each person's own business.</li>
+  </ul>
+</section> 
 
   <section class="panel" data-kind="anim">
     <div class="stage">
